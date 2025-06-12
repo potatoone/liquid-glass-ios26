@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>onlyapplecando</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+body {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: url("https://ts1.tc.mm.bing.net/th/id/R-C.7158562963108c927f6494c3c8c0efd0?rik=jkF2jwuPmEjD0A&riu=http%3a%2f%2fi3.sinaimg.cn%2fcj%2fworld%2f20151020%2fU11525P31T1D23525280F46DT20151020150532.jpg&ehk=%2bPHtd%2bO92uaLqqxwGf%2bOzjK8YS3lz2c9l0f5fD6HzKk%3d&risl=&pid=ImgRaw&r=0")
+    center center;
+  background-size: 1200px;
+  font-family: sans-serif;
+  font-weight: 300;
+  animation: moveBackground 60s linear infinite;
+}
+
+/* 导航栏容器 */
+.nav-bar {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    max-width: 50rem;
+    height: 7rem;
+    border-radius: 100px;
+    padding: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.082), 0 4px 6px -2px rgba(0, 0, 0, 0.082);
+    overflow: visible;
+    position: relative;
+    transition: transform 0.3s ease; /* 添加过渡效果 */
+}
+
+/* 添加拖拽时的放大效果 */
+.nav-bar.dragging {
+    transform: scale(1.03); /* 放大到1.02倍 */
+}
+
+/* 对称渐变边框效果 */
+.nav-bar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 100px;
+    padding: 1px;
+    background: conic-gradient(
+        #bfbfbf 0deg,
+        #c5c5c5 20deg,
+        #dddddd 30deg,
+        #dddddd 45deg,
+        #dddddd 50deg,
+        #dddddd 55deg,
+        #dddddd 60deg,
+        #ffffff 65deg,
+        #ffffff 70deg,
+        #ffffff 75deg,
+        #ffffff 80deg,
+        #8b8b8b 85deg,
+        #505050 90deg,
+        #505050 95deg,
+        #606060 100deg,
+        #494949 135deg,
+        #bfbfbf 180deg,
+        #dddddd 225deg,
+        #dddddd 240deg,
+        #ffffff 255deg,
+        #dddddd 260deg,
+        #515151 265deg,
+        #515151 270deg,
+        #515151 275deg,
+        #515151 280deg,
+        #515151 285deg,
+        #969696 300deg,
+        #969696 315deg,
+        #bfbfbf 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* 按钮样式 */
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    width: calc(33% - 0.5rem); /* 确保每个按钮宽度相等 */
+    border-radius: 100px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+}
+
+/* 按钮文本 */
+.nav-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #ffffff;
+    margin-top: 0.5rem;
+}
+
+/* 图标和文字的基础样式 */
+.nav-item i {
+    font-size: 2rem;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+
+/* 按钮激活状态颜色 */
+.nav-item--active i,
+.nav-item--active .nav-text {
+    color: var(--active-color, #3B82F6);
+}
+
+/* 每个按钮的激活颜色 */
+.nav-item:nth-child(1) {
+    --active-color: #0062ff;
+}
+
+.nav-item:nth-child(2) {
+    --active-color: #ff3d02;
+}
+
+.nav-item:nth-child(3) {
+    --active-color: #fff822;
+}
+
+.liquid {
+    position: absolute;
+    top: 50%;
+    left: 0.35rem;
+    width: calc(34% - 1rem);
+    height: calc(100% - 10px);
+    border-radius: 60px;
+    z-index: 0;
+    box-shadow: 0 6px 16px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08);
+    isolation: isolate;
+    overflow: hidden;
+}
+
+/* 修改 .liquid-effect 的样式 */
+.liquid-effect {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: rgba(187, 187, 187, 0.589); /* 默认显示半透明白色背景 */
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* 添加拖拽时的样式类 */
+.liquid-effect.dragging {
+    background: none; /* 拖拽时移除背景色 */
+    backdrop-filter: blur(3px);
+    filter: url(#glass-distortion);
+}
+
+.liquid-tint,
+.liquid-shine {
+    position: absolute;
+    inset: 0;
+    opacity: 0; /* 默认隐藏 */
+    transition: opacity 0.3s;
+}
+
+.liquid-tint {
+    z-index: 1;
+    background: rgba(255, 255, 255, 0);
+}
+
+.liquid-shine {
+    z-index: 2;
+    overflow: hidden;
+    border-radius: inherit;
+    box-shadow: 
+        inset 5px 4px 5px 0px rgba(0, 0, 0, 0.375),
+        inset -3px -5px 5px 0px rgba(255, 255, 255, 0.638);
+}
+
+/* 拖拽时显示效果 */
+.liquid.dragging .liquid-tint,
+.liquid.dragging .liquid-shine {
+    opacity: 1;
+}
+
+    </style>
+
+</head>
+
+
+<div class="nav-bar">
+    <div class="nav-item nav-item--active" data-index="0">
+        <i class="fa fa-globe fa-lg"></i>
+        <span class="nav-text">马嘉祺</span>
+    </div>
+    <div class="nav-item" data-index="1">
+        <i class="fa fa-clock-o fa-lg"></i>
+        <span class="nav-text">张真源</span>
+    </div>
+    <div class="nav-item" data-index="2">
+        <i class="fa fa-hourglass-o fa-lg"></i>
+        <span class="nav-text">贺俊霖</span>
+    </div>
+    <div class="liquid" id="liquid">
+        <div class="liquid-effect"></div>
+        <div class="liquid-tint"></div>
+        <div class="liquid-shine"></div>
+    </div>
+</div>
+
+    <svg style="display: none">
+      <filter
+        id="glass-distortion"
+        x="0%"
+        y="0%"
+        width="100%"
+        height="100%"
+        filterUnits="objectBoundingBox"
+      >
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.01 0.01"
+          numOctaves="1"
+          seed="5"
+          result="turbulence"
+        />
+        <!-- Seeds: 14, 17,  -->
+
+        <feComponentTransfer in="turbulence" result="mapped">
+          <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+          <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+          <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+        </feComponentTransfer>
+
+        <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+
+        <feSpecularLighting
+          in="softMap"
+          surfaceScale="5"
+          specularConstant="1"
+          specularExponent="100"
+          lighting-color="white"
+          result="specLight"
+        >
+          <fePointLight x="-200" y="-200" z="300" />
+        </feSpecularLighting>
+
+        <feComposite
+          in="specLight"
+          operator="arithmetic"
+          k1="0"
+          k2="1"
+          k3="1"
+          k4="0"
+          result="litImage"
+        />
+
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="softMap"
+          scale="150"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </svg>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const navBar = document.querySelector('.nav-bar');
+    const navItems = document.querySelectorAll('.nav-item');
+    const liquid = document.getElementById('liquid');
+    let activeIndex = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startOffset = 0;
+
+    // 初始化指示器位置
+    setLiquid(activeIndex);
+
+    navBar.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', handleDrag);
+    document.addEventListener('mouseup', endDrag);
+
+    function startDrag(e) {
+        isDragging = true;
+        startX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        startOffset = getOffset(activeIndex);
+        liquid.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1)';
+        liquid.style.transform = `translateX(${startOffset}px) translateY(-50%) scale(1,1.4)`;
+        document.body.style.userSelect = 'none';
+        // 添加拖拽效果
+        document.querySelector('.liquid-effect').classList.add('dragging');
+        liquid.classList.add('dragging');
+        navBar.classList.add('dragging'); // 添加这行
+    }
+
+    function handleDrag(e) {
+        if (!isDragging) return;
+        const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        const deltaX = clientX - startX;
+        const actualX = startOffset + deltaX;
+        const drag = Math.abs(deltaX);
+        const maxDrag = 150;
+        const p = Math.min(drag / maxDrag, 1);
+        const ease = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        const scaleY = drag > 5 ? 1.4 - (ease * 0.55) : 1.4;
+        const scaleX = drag > 5 ? 1 + (0.1 * ease) : 1;
+        liquid.style.transition = 'none';
+        liquid.style.transform = `translateX(${actualX}px) translateY(-50%) scale(${scaleX},${scaleY})`;
+
+        // 切换按钮
+        const idx = Math.round(actualX / getStep());
+        if (idx !== activeIndex && idx >= 0 && idx < navItems.length) {
+            navItems[activeIndex].classList.remove('nav-item--active');
+            activeIndex = idx;
+            navItems[activeIndex].classList.add('nav-item--active');
+            setLiquid(activeIndex);
+        }
+    }
+
+    function endDrag() {
+        if (!isDragging) return;
+        isDragging = false;
+        document.body.style.userSelect = '';
+        liquid.style.transition = 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)';
+        setLiquid(activeIndex);
+        // 移除拖拽效果
+        document.querySelector('.liquid-effect').classList.remove('dragging');
+        liquid.classList.remove('dragging');
+        navBar.classList.remove('dragging'); // 添加这行
+        setTimeout(() => { liquid.style.transition = ''; }, 350);
+    }
+
+    function setLiquid(idx) {
+        liquid.style.transform = `translateX(${getOffset(idx)}px) translateY(-50%)`;
+    }
+
+    function getStep() {
+        const itemWidth = navBar.clientWidth / navItems.length;
+        const gap = parseFloat(getComputedStyle(navBar).gap) || 0;
+        return itemWidth + gap;
+    }
+
+    function getOffset(idx) {
+        return getStep() * idx;
+    }
+});
+</script>
+
+</body>
+
+</html>
